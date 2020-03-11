@@ -5,7 +5,7 @@ class AchievementView {
   final BuildContext _context;
   final AlignmentGeometry alignment;
   final Duration duration;
-  final GestureTapCallback onTab;
+  final GestureTapCallback onTap;
   final Function(AchievementState) listener;
   final bool isCircle;
   final Widget icon;
@@ -16,12 +16,13 @@ class AchievementView {
   final TextStyle textStyleSubTitle;
   final String title;
   final String subTitle;
+  final Widget customContent;
 
   OverlayEntry _overlayEntry;
 
   AchievementView(
     this._context, {
-    this.onTab,
+    this.onTap,
     this.listener,
     this.isCircle = false,
     this.icon = const Icon(
@@ -37,6 +38,7 @@ class AchievementView {
     this.duration = const Duration(seconds: 3),
     this.title = "My Title",
     this.subTitle = "My subtitle with max 1 line",
+    this.customContent
   });
 
   OverlayEntry _buildOverlay() {
@@ -46,9 +48,10 @@ class AchievementView {
         child: AchievementWidget(
           title: title,
           subTitle: subTitle,
+          customContent: customContent,
           duration: duration,
           listener: listener,
-          onTab: onTab,
+          onTap: onTap,
           isCircle: isCircle,
           textStyleSubTitle: textStyleSubTitle,
           textStyleTitle: textStyleTitle,

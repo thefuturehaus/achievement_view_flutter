@@ -15,7 +15,7 @@ enum AnimationTypeAchievement {
 
 class AchievementWidget extends StatefulWidget {
   final Function() finish;
-  final GestureTapCallback onTab;
+  final GestureTapCallback onTap;
   final Function(AchievementState) listener;
   final Duration duration;
   final bool isCircle;
@@ -27,6 +27,7 @@ class AchievementWidget extends StatefulWidget {
   final TextStyle textStyleSubTitle;
   final String title;
   final String subTitle;
+  final Widget customContent;
 
   const AchievementWidget(
       {Key key,
@@ -38,14 +39,15 @@ class AchievementWidget extends StatefulWidget {
         Icons.insert_emoticon,
         color: Colors.white,
       ),
-      this.onTab,
+      this.onTap,
       this.typeAnimationContent = AnimationTypeAchievement.fadeSlideToUp,
       this.borderRadius = 5.0,
       this.color = Colors.blueGrey,
       this.textStyleTitle,
       this.textStyleSubTitle,
       this.title = "",
-      this.subTitle = ""})
+      this.subTitle = "",
+      this.customContent})
       : super(key: key);
 
   @override
@@ -69,6 +71,8 @@ class AchievementWidgetState extends State<AchievementWidget>
 
   AnimationController _controllerSubTitle;
   Animation<Offset> _subTitleSlideUp;
+
+  AchievementState _currentState;
 
   @override
   void initState() {
@@ -134,6 +138,13 @@ class AchievementWidgetState extends State<AchievementWidget>
     _controllerScale.forward();
   }
 
+  void hide() {
+    if (_currentState != AchievementState.closing) {
+      _notifyListener(AchievementState.closing);
+      _controllerSize.reverse();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -154,11 +165,12 @@ class AchievementWidgetState extends State<AchievementWidget>
       borderRadius: _buildBorderCard(),
       color: widget.color,
       child: InkWell(
-        onTap: () {
-          if (widget.onTab != null) {
-            widget?.onTab();
-          }
-        },
+        borderRadius: _buildBorderCard(),
+        onTap: (widget.onTap != null)
+            ? widget.onTap
+            : () {
+                hide();
+              },
         child: Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -189,10 +201,10 @@ class AchievementWidgetState extends State<AchievementWidget>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              _buildTitle(),
-              _buildSubTitle(),
-            ],
+            children: <Widget>[] +
+                (widget.customContent != null
+                    ? [widget.customContent]
+                    : [_buildTitle(), _buildSubTitle()]),
           ),
         ),
       ),
@@ -286,6 +298,7 @@ class AchievementWidgetState extends State<AchievementWidget>
   }
 
   void _notifyListener(AchievementState state) {
+    _currentState = state;
     if (widget.listener != null) {
       widget.listener(state);
     }
@@ -293,8 +306,7 @@ class AchievementWidgetState extends State<AchievementWidget>
 
   void _startTime() {
     Future.delayed(widget.duration, () {
-      _notifyListener(AchievementState.closing);
-      _controllerSubTitle.reverse();
+      hide();
     });
   }
 
